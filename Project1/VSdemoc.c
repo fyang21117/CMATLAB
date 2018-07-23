@@ -4,13 +4,12 @@
 #include "engine.h"
 #include "matrix.h"
 
-#define  BUFSIZE 256
+#define  BUFSIZE 100
 #define  N 120
 
 #pragma comment(lib, "libeng.lib")
 #pragma comment(lib, "libmx.lib")
 #pragma comment(lib, "libmat.lib")
-
 
 int main()
 {
@@ -18,7 +17,41 @@ int main()
 	char buffer[BUFSIZE + 1],level;
 	int i = 25 ,return_num;
 	mxArray *testdata = NULL, *result = NULL;
-	double cArray[N] = { 
+	double cArray[N]=									//xibanshui8
+	{
+	0	,	0	,	0	,	0.009765625	,
+0	,	0	,	0	,	0.009765625	,
+0	,	0.009765625	,	0.009765625	,	0.009765625	,
+0	,	0	,	0.009765625	,	0.009765625	,
+0	,	0	,	0	,	0.009765625	,
+0	,	0	,	0	,	0.009765625	,
+0	,	0	,	0.009765625	,	0.009765625	,
+0	,	0.009765625	,	0	,	0.009765625	,
+0	,	0	,	0	,	0.009765625	,
+0	,	0.009765625	,	0	,	0.009765625	,
+0	,	0	,	0.009765625	,	0.009765625	,
+0	,	0	,	0	,	0.009765625	,
+0	,	0.009765625	,	0	,	0.009765625	,
+0	,	0	,	0.009765625	,	0.009765625	,
+0	,	0.009765625	,	0	,	0.009765625	,
+0	,	0	,	0.009765625	,	0.009765625	,
+0	,	0	,	0	,	0.009765625	,
+0	,	0	,	0	,	0.009765625	,
+0	,	0	,	0	,	0.009765625	,
+0	,	0.009765625	,	0.009765625	,	0.009765625	,
+0	,	0	,	0	,	0.009765625	,
+0	,	0	,	0	,	0.009765625	,
+0	,	0	,	0.009765625	,	0.009765625	,
+0	,	0.009765625	,	0.009765625	,	0.009765625	,
+0	,	0	,	0.009765625	,	0.009765625	,
+0	,	0	,	0.009765625	,	0.009765625	,
+0	,	0.009765625	,	0.009765625	,	0.009765625	,
+0	,	0	,	0.01953125	,	0.009765625	,
+0	,	0.009765625	,	0.01953125	,	0.01953125	,
+0	,	0	,	0.01953125	,	0.009765625	
+
+	};
+	/*double cArray[N] = {							//yan,1
 		0	,	4	,	10	,	1	,
 		1	,	7	,	15	,	1	,
 		1	,	11	,	12	,	1	,
@@ -49,7 +82,7 @@ int main()
 		2	,	49	,	13	,	1	,
 		1	,	29	,	30	,	1	,
 		1	,	24	,	33	,	2
-	};
+	};*/
 
 	if (!(ep = engOpen(NULL)))
 	{
@@ -58,38 +91,34 @@ int main()
 	}
 	
 	engSetVisible(ep,false);
-	testdata = mxCreateDoubleMatrix(1, N, mxREAL);										//MATLAB引擎函数使用mxArray数据类型
+	testdata = mxCreateDoubleMatrix(1, N, mxREAL);								//MATLAB引擎函数使用mxArray数据类型
 	memcpy((double *)mxGetPr(testdata), (double *)cArray, N * sizeof(double));			
-
-	int flag = engPutVariable(ep, "input_data", testdata);									//将testdata写入Matlab工作空间，取名input_data
-	if(flag ==1)
-		printf("Failed to send  testdata to MATLAB !...\n\n");
-												
-	engEvalString(ep, "save data  input_data  ; ");
+	engPutVariable(ep, "input_data", testdata);									//将testdata写入Matlab工作空间，取名input_data									
+	engEvalString(ep, "save data.mat input_data");								//生存路径D:\Program Files (x86)\SetupDir\MATLAB\R2016b
 
 	buffer[BUFSIZE] = '\0';
-	engOutputBuffer(ep, buffer, BUFSIZE);												//结果缓冲区buffer
-	engEvalString(ep, "VSdemoc");															// 调用"MethodTest.m"
-	engOutputBuffer(ep, NULL, 0);					
+	engOutputBuffer(ep, buffer, BUFSIZE);										//结果缓冲区buffer
+	engEvalString(ep, "VSdemoc");												// 调用"VSdemoc.m"
+	engOutputBuffer(ep, NULL, 0);												//stop saving output
 	
-	if ((result = engGetVariable(ep, "kind")) == NULL)
+	if ((result = engGetVariable(ep, "return_num")) == NULL)		
 	{
-		//printf("The  result of MATLAB is %s.\n", buffer);
+		printf("The  result of MATLAB is %s.\n", buffer);
 		for (; !(buffer[i] >= 'A' && buffer[i] <= 'Z'); i++)
 		{
 			if(buffer[i] >= '0' && buffer[i] <= '9')
 				return_num = (int)(buffer[i] - 48);
 		}
 		level = (char)(buffer[i]);
-		printf("The return_num is %d\n\n", return_num);							//the return_num is 1(smoke)，2(jinshuqi)，or 3(washing water)
-		printf("The level is %c\n\n", level);									//the level is A，B or C
+		printf("The return_num is %d\n\n", return_num);				// 1(smoke)，2(jinshuqi)，or 3(washing water)
+		printf("The level is %c\n\n", level);						//the level is A，B or C
 	}
 	else
 	{
-		 printf("There is something wrong with MATLAB engine!\n" );
+		 printf("engGetVariable error !\n" );
 	}
 
-	mxDestroyArray(testdata);							//释放内存
+	mxDestroyArray(testdata);							
 	mxDestroyArray(result);
 
 	//printf("\nHit return to continue...");
