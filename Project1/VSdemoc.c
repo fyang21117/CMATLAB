@@ -1,20 +1,22 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include "engine.h"
 #include "matrix.h"
-
-#define  BUFSIZE 30
-#define  N 120
+#define  BUFSIZE 40
 
 #pragma comment(lib, "libeng.lib")
 #pragma comment(lib, "libmx.lib")
 #pragma comment(lib, "libmat.lib")
-void init_engine();
 
 int main()
 {
-	Engine *ep;
+	Engine *ep;												
+	int i =0, j =0, k =0;
+	mxArray *testdata = NULL, *result = NULL;
+	char kind[5], level[5], buffer[BUFSIZE + 1],data[240];
+	kind[4] = level[4]= '\0';
 	if (!(ep = engOpen(NULL)))
 	{
 		printf("Can't start MATLAB engine!\n\n");
@@ -22,111 +24,88 @@ int main()
 	}
 	engSetVisible(ep, false);
 
-	char returns[8] , buffer[BUFSIZE + 1];
-	int i = 0, j = 0, temp, len, cArray[N];
-	mxArray *testdata = NULL, *result = NULL;
-	
-	unsigned int	HEX_data[180] = {
-		12	,	34	,	00	,	00     ,  0x1D ,	05	,
-		12	,	34	,	0x1E,    00		,	00	,	05	,
-		12	,	34	,	00	,	0x1F	,	00	,	06	,
-		12	,	34	,	00	,	0x1E	,	00	,	05	,
-		12	,	34	,	00	,	0x1D	,	00	,	05	,
-		12	,	34	,	00	,	0x1F	,	00	,	0x2A	,
-		12	,	34	,	00	,	0x1E	,	00	,	05	,
-		12	,	34	,	00	,	0x1D	,	00	,	05	,
-		12	,	34	,	00	,	0x1F	,	00	,	06	,
-		12	,	34	,	00	,	0x1E	,	00	,	05	,
-		12	,	34	,	00	,	0x1D	,	00	,	05	,
-		12	,	34	,	00	,	0x1F	,	00	,	06	,
-		12	,	34	,	00	,	0x1E	,	00	,	05	,
-		12	,	34	,	00	,	0x1D	,	00	,	05	,
-		12	,	34	,	00	,	0x1F	,	00	,	06	,
-		12	,	34	,	00	,	0x1E	,	00	,	05	,
-		12	,	34	,	00	,	0x1D	,	00	,	05	,
-		12	,	34	,	00	,	0x1F	,	00	,	06	,
-		12	,	34	,	00	,	0x1E	,	00	,	05	,
-		12	,	34	,	00	,	0x1D	,	00	,	05	,
-		12	,	34	,	00	,	0x1F	,	00	,	06	,
-		12	,	34	,	00	,	0x1E	,	00	,	05	,
-		12	,	34	,	00	,	0x1D	,	00	,	05	,
-		12	,	34	,	00	,	0x1F	,	00	,	06	,
-		12	,	34	,	00	,	0x1E	,	00	,	05	,
-		12	,	34	,	00	,	0x1D	,	00	,	05	,
-		12	,	34	,	00	,	0x1F	,	00	,	06	,
-		12	,	34	,	00	,	0x1E	,	00	,	05	,
-		12	,	34	,	00	,	0x1E	,	00	,	05	,
-		12	,	34	,	00	,	0x1D	,	00	,	05
-	};
-//	printf("\n0x1D/16= %d  \n", 0x1D /16);
-	printf("change data to dec is :\n");
-	for (i=0; i<180; i++)
-	{
-		if(i%6!=0  && (i-1)%6!=0  )
-		{
-			cArray[j++] = HEX_data[i];
-			if(HEX_data[i] % 16 < '9')
-				cArray[j]= (HEX_data[i] / 16) * 16 + (HEX_data[i] % 16);
-			else
-			{
-				switch (HEX_data[i] % 16)
-				{
-				case 'A':temp = 10; break;
-				case 'B':temp = 11; break;
-				case 'C':temp = 12; break;
-				case 'D':temp = 13; break;
-				case 'E':temp = 14; break;
-				case 'F':temp = 15; break;
-				default:break;
-				}
-				cArray[j] = (HEX_data[i] / 16) * 16 + temp;
-			}
-		printf("%3d  ", cArray[j]);
-		}
-	}j = 0;
-	len = sizeof(cArray)/sizeof(int);
-	printf("\nthe length is %d \n",len);
-	
-	testdata = mxCreateDoubleMatrix(1, N, mxREAL);
-	memcpy((void*)mxGetPr(testdata), (void *)cArray, N * sizeof(int));
-	engPutVariable(ep, "input_data", testdata);									//将testdata写入Matlab工作空间，取名input_data									
-	engEvalString(ep, "save ('data.mat','input_data');");						//生成路径D:\Program Files (x86)\SetupDir\MATLAB\R2016b
+	char input[] = { "ABCDEFGHIJKLMNABCDEFGHIJKLMN012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903" };
+	for (i = 28; i < 269; i++,j++)										//截取气味数据到数组
+		data[j] = input[i];
 
-	buffer[BUFSIZE] = '\0';
-	engOutputBuffer(ep, buffer, BUFSIZE);										//结果缓冲区buffer
-	engEvalString(ep, "newtest");												// 调用"VSdemoc.m"
-	engOutputBuffer(ep, NULL, 0);												//stop saving output
+	testdata = mxCreateString(data);
+	engPutVariable(ep, "input_data", testdata);							//将testdata传入Matlab工作空间，取名input_data	
+	engEvalString(ep, "save ('data.mat','input_data');");				//生成路径D:\Program Files (x86)\SetupDir\MATLAB\R2016b
+
+	buffer[BUFSIZE] =  '\0' ;
+	engOutputBuffer(ep, buffer, BUFSIZE);								//结果缓冲区buffer
+	engEvalString(ep, "stringtest");									// 调用"stringtest.m"
+	engOutputBuffer(ep, NULL, 0);												
 	
-	if ((result = engGetVariable(ep, "output")) != NULL)		
+	if ((result = engGetVariable(ep, "level")) != NULL)
 	{
 //		printf("The  result of MATLAB is %s", buffer);
-//		printf("size of buffer is :%ld\n", sizeof(buffer) / sizeof(char));
-		for (i = 11; i<18; i++)
+		for (i = 0; i < 4; i++)
 		{
-			returns[j++] = buffer[i];
-		/*	if (buffer[i] == '=')
-			{
-				i += 2;
-				for (j = 0; j <= 4; j++)
-					returns[j] = buffer[++i];
-			}*/
+			kind[i] = buffer[i + 9];
+			level[i] = buffer[i+25];					// 0x01(smoke),0x02(jinshuqi), 0x03(xibanshui);
 		}
-		printf("\nThe returns is %s\n", returns);// 1(smoke),2(jinshuqi),or 3(xibanshui),the level is A,B or C
+		printf("The kind is %s", kind);
+		printf("\nThe level is %s", level);
 	}
 	else
-	{
 		 printf("engGetVariable error !\n" );
-	}
+
 	mxDestroyArray(testdata);							
 	mxDestroyArray(result);
-	getchar();											
-	engClose(ep);										
+	engClose(ep);
+	getchar();	while (1);								
 	return EXIT_SUCCESS;
 }
 
-void init_engine()
+
+//			kind[0] = buffer[9]; kind[1] = buffer[10]; kind[2] = buffer[11]; kind[3] = buffer[12]; kind[4] = '\0';
+//			level[0] = buffer[25]; level[1] = buffer[26]; level[2] = buffer[27]; level[3] = buffer[28]; level[4] = '\0';
+//			printf("the buffer is %c\n",buffer[i]);
+
+/*char cat[]= "0x",**stop = NULL,hex[120] ;
+for (i = 15; i < 135; i++)
 {
-	
-
+sprintf(hex, "%s%d",cat,temp[i]);
+printf(" hex:%4s ", hex);
+cArray[j] = strtol(hex,stop, 16);
+printf(" dec:%3.0lf\n",cArray[j]);
+j++;
 }
+*/
+//	mexPutArray(testdata,"input_data");
+//	testdata = mxCreateDoubleMatrix(1, N, mxREAL);
+//	memcpy((double*)mxGetPr(testdata),(double*)cArray, N * sizeof(double));
+//	memcpy((char*)mxGetPr(testdata), (char*)cArray, N * sizeof(char));
 
+
+//	len = sizeof(cArray)/sizeof(double);
+//	printf("\nthe length is %d \n",len);
+//		printf("The  result of MATLAB is %s", buffer);
+//		sprintf(str,"%s%d%s","\"", HEX_data[i],"\"");
+//		printf("%d \n", atoi(str));
+//	char a = '10';
+//		printf("%d",a-'0');
+//		printf("%d ", strtol(str, NULL, 10));
+//		printf("%d \n",str-'0');
+//		cArray[j] = ((int)str / 10) * 16 + ((int)str % 10);
+//	printf("%3.0lf ", cArray[j]);
+/*
+int c[10],hex[10];
+char str[10];
+double res[10];
+for(i=0;i<2;i++)
+{
+scanf("%s",str);
+printf("%s ",str);
+
+sprintf(str, "%d",  hex[i]);
+printf(" str:%s ",str);
+c[i] = strtol(str, NULL, 10);
+printf(" num:%d ", c[i]);
+res[i] = (c[i] / 10) * 16 + (c[i] % 10);
+printf(" dec:%3.0lf\n",res[i]);
+}*/
+//		strcat(cat,str);//	printf(" %s ", cat);
+//		cArray[j] = (c[j] / 10) * 16 + (c[j] % 10);
+//		cArray[j] = c[j];
