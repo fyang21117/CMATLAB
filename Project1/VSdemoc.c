@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include "engine.h"
 #include "matrix.h"
-#define  BUFSIZE 40
+#define  BUFSIZE 40//40
 
 #pragma comment(lib, "libeng.lib")
 #pragma comment(lib, "libmx.lib")
@@ -17,10 +17,8 @@ int main()
 	Engine *ep= engOpen(NULL);
 	init_engine(ep);
 
-//	char input[] = { "AAAA007C060103012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903020303" };
-	char input[255] ;
-	for (int i = 0; i < 255; i++)
-		input[i] = '0';
+	//char input[] = { "AAAA007C060103012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903012539030125390301243903020303" };
+	char input[] = { "AAAA007C0601020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000D9"};
 	handling(ep,input);
 
 	engClose(ep);
@@ -57,11 +55,11 @@ void handling(Engine *ep, char temp[])
 	buffer[BUFSIZE] = '\0';
 	engOutputBuffer(ep, buffer, BUFSIZE);								//结果缓冲区buffer
 	engEvalString(ep, "hextest");									// 调用"hextest.m"
-	engOutputBuffer(ep, NULL, 0);
+	//engOutputBuffer(ep, NULL, 0);
 
 	if ((result = engGetVariable(ep, "level")) != NULL)
 	{
-		//for(i=0;i<30;i++)			printf("The  result of MATLAB is %c\n", buffer[i]);
+		printf("The  result of MATLAB is %s\n",buffer);
 		for (i = 0; i < 2; i++)
 		{
 			level[i] = buffer[i + 11];
@@ -70,7 +68,11 @@ void handling(Engine *ep, char temp[])
 		printf("\nThe return is %s", level);
 	}
 	else
-		printf("engGetVariable error !\n");
+	{
+	printf("engGetVariable error !\n");
+	//for (i = 0; i < 80;i++)printf("The  result of MATLAB【i】 is %c\n", buffer[i]);
+	}
+	
 	mxDestroyArray(testdata);
 	mxDestroyArray(result);
 //	return level;
