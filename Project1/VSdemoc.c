@@ -1,95 +1,118 @@
-#include <stdlib.h>
+Ôªø#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include "engine.h"
 #include "matrix.h"
-#define  BUFSIZE 40//40
 
+#define  BUFSIZE 160
 #pragma comment(lib, "libeng.lib")
 #pragma comment(lib, "libmx.lib")
 #pragma comment(lib, "libmat.lib")
-int  init_engine(Engine *p);
-void handling(Engine *ep, char temp[]);
 
 int main()
 {
-	Engine *ep= engOpen(NULL);
-	init_engine(ep);
+	Engine *ep = engOpen(NULL);
+	char level[21],returns[5][5],buffer[BUFSIZE + 1],data[241], data1[241], data2[241], data3[241], data4[241];
+	int i = 0, j = 0,flag = 0;
+	mxArray *testdata = NULL, *testdata1 = NULL, *testdata2 = NULL, *testdata3 = NULL, *testdata4 = NULL, *result = NULL;
+	level[20] = '\0';
 
-	//3¡Ò¡´:2
-	  char input[] = { "AAAA007C060103016516030265160202651602036516020365160201661603016616030266160202661602036716020367160201671603016716030268170202681702026817030268170301681703016817030368170203681702026817030268170301681702016817020368160203681602026816030268160302681602D9" };
-	
-	//2œ„ÀÆ
-	//char input[] = { "AAAA007C06010300D08E9600D08E9600D08E9600D08E9500D08E9500D18E9500D18E9500D18E9400D18E9400D18E9400D18E9400D08E9300D08E9300D08D9200D08D9200D08D9200D08D9200D08D9100D08D9100D08D9200D08D9200D08D9100D08D9100D08D9100D08D9100D08D9100D08D9100D08C9200D08C9200D08C92D9"};
-
-	//4≈Á∆·
-	//char input[] = { "AAAA007C060103028F8900028F8900028E8902028E8902018D8902018D89020292890002928900009A8903009A8903019F8900019F890002A2891102A2891101A3890301A3890302A38A0002A38A0000A28A0300A28A0301A18A0201A18A02029F8B11029F8B11019D8B03019D8B03029B8B00029B8B0000998C0200998C02D9"};
-
-	//1—Ã:4
-	//char input[] = { "AAAA007C0601030F87670607866B0A07866B0A0885730F0885730F0B84740F0B84740F08826F0E08826F0E0F816F100F816F10077E6F0E077E6F0E087B6D0C087B6D0C07796F0B07796F0B177C740C177C740C127F7B15127F7B15077D7911077D79110679740E0679740E0677700D0677700D0075700B0075700B0E73720CD9"};
-	//char input[] = { "AAAA007C0601020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000D9"};
-	handling(ep,input);
-
-	engClose(ep);
-	getchar();
-	while (1);								
-	return EXIT_SUCCESS;
-}
-
-int init_engine(Engine *p)
-{
-	if (!p)
+	if (!ep)
 	{
 		printf("Can't start MATLAB engine!\n\n");
 		return EXIT_FAILURE;
 	}
-	engSetVisible(p, false);
-	return 0;
-}
+	engSetVisible(ep, false);
 
-void handling(Engine *ep, char temp[])
-{
-	int i = 0, j = 0;
-	mxArray *testdata = NULL, *result = NULL;
-	char  level[5], buffer[BUFSIZE + 1], data[241];
-	level[4] = '\0';
-	for (i = 14; i < 255; i++, j++)										//Ωÿ»°∆¯Œ∂ ˝æ›µΩ ˝◊È
-		data[j] = temp[i];
-	data[240] = '\0';
+	//0
+	char input[]  = { "AAAA007C060102000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000D9" };
+	//1ÁÉü:4
+	char input1[] = { "AAAA007C0601030F87670607866B0A07866B0A0885730F0885730F0B84740F0B84740F08826F0E08826F0E0F816F100F816F10077E6F0E077E6F0E087B6D0C087B6D0C07796F0B07796F0B177C740C177C740C127F7B15127F7B15077D7911077D79110679740E0679740E0677700D0677700D0075700B0075700B0E73720CD9" };
+	//2È¶ôÊ∞¥
+	char input2[] = { "AAAA007C06010300D08E9600D08E9600D08E9600D08E9500D08E9500D18E9500D18E9500D18E9400D18E9400D18E9400D18E9400D08E9300D08E9300D08D9200D08D9200D08D9200D08D9200D08D9100D08D9100D08D9200D08D9200D08D9100D08D9100D08D9100D08D9100D08D9100D08D9100D08C9200D08C9200D08C92D9" };
+	//3Ê¶¥Ëé≤:2
+	char input3[] = { "AAAA007C060103016516030265160202651602036516020365160201661603016616030266160202661602036716020367160201671603016716030268170202681702026817030268170301681703016817030368170203681702026817030268170301681702016817020368160203681602026816030268160302681602D9" };
+	//4Âñ∑ÊºÜ
+	char input4[] = { "AAAA007C060103028F8900028F8900028E8902028E8902018D8902018D89020292890002928900009A8903009A8903019F8900019F890002A2891102A2891101A3890301A3890302A38A0002A38A0000A28A0300A28A0301A18A0201A18A02029F8B11029F8B11019D8B03019D8B03029B8B00029B8B0000998C0200998C02D9" };
 
+	for (i = 14; i < 254; i++, j++) {	//ÂâçÈù¢14‰ΩçÂõ∫ÂÆöÂ≠óÁ¨¶ÔºåÂêéÈù¢ËøûÁùÄÊ∞îÂë≥Êï∞ÊçÆ120‰∏™(240‰Ωç)ÊòØÊà™ÂèñÈÉ®ÂàÜ
+		data[j]  = input[i];
+		data1[j] = input1[i];
+		data2[j] = input2[i];
+		data3[j] = input3[i];
+		data4[j] = input4[i];
+	}
+	data[240]='\0';
+	data1[240] = '\0';	
+	data2[240] = '\0';
+	data3[240] = '\0';
+	data4[240] = '\0';
 	testdata = mxCreateString(data);
-	engPutVariable(ep, "input_data", testdata);							//Ω´testdata¥´»ÎMatlabπ§◊˜ø’º‰£¨»°√˚input_data	
-	engEvalString(ep, "save ('data.mat','input_data');");				//…˙≥…¬∑æ∂D:\Program Files (x86)\SetupDir\MATLAB\R2016b
+	testdata1 = mxCreateString(data1);
+	testdata2 = mxCreateString(data2);
+	testdata3 = mxCreateString(data3);
+	testdata4 = mxCreateString(data4);
 
-	buffer[BUFSIZE] = '\0';
-	engOutputBuffer(ep, buffer, BUFSIZE);								//Ω·π˚ª∫≥Â«¯buffer
-	engEvalString(ep, "laomatest");									// µ˜”√"hextest.m"
-	//engOutputBuffer(ep, NULL, 0);
+	if(flag != engPutVariable(ep, "input_data", testdata))			
+		printf("f2f0\n");			
+	if (flag != engPutVariable(ep, "input_data1", testdata1))			
+		printf("f2f1\n");
+	if (flag != engPutVariable(ep, "input_data2", testdata2))			
+		printf("f2f2\n");
+	if (flag != engPutVariable(ep, "input_data3", testdata3))			
+		printf("f2f3\n");
+	if (flag != engPutVariable(ep, "input_data4", testdata4))			
+		printf("f2f4\n");
 
-	if ((result = engGetVariable(ep, "level")) != NULL)
+	if (flag != engEvalString(ep, "save 'data.mat';"))//Ê£ÄÊü•Â≠òÊï∞ÊçÆÊÉÖÂÜµ
 	{
-		printf("The  result of MATLAB is %s\n",buffer);
-		for (i = 0; i < 2; i++)
-		{
-			level[i] = buffer[i + 11];
-			level[i+2] = buffer[i + 27];					// 0x01(smoke),0x02(jinshuqi), 0x03(xibanshui);01-05level
-		}
-		printf("\nThe return is %s", level);
+		printf("f3ff\n");
 	}
-	else
+
+/*	if(flag != engEvalString(ep, "save ('data.mat','input_data');"))	//Ê£ÄÊü•Â≠òÊï∞ÊçÆÊÉÖÂÜµ
 	{
-	printf("engGetVariable error !\n");
-	//for (i = 0; i < 80;i++)printf("The  result of MATLAB°æi°ø is %c\n", buffer[i]);
-	}
+		printf("f3ff\n");
+	}*/
 	
-	mxDestroyArray(testdata);
-	mxDestroyArray(result);
-//	return level;
+	buffer[BUFSIZE] = '\0';
+	engOutputBuffer(ep, buffer, BUFSIZE);						
+	if(flag != engEvalString(ep, "laomatest"))		//Ê£ÄÊü•ÁÆóÊ≥ïÊñá‰ª∂ÊâßË°åÔºåÈîôËØØËæìÂá∫f4ff 
+	{
+		printf("f4ff\n");
+	}
+	engOutputBuffer(ep, NULL, 0);
+
+	//printf("The  result of MATLAB is %s\n",buffer);
+	if ((result = engGetVariable(ep, "level")) !=NULL)
+	{
+		//for (i = 0; i < sizeof(buffer); i++)printf("The  result of MATLAB„Äê%d„Äë is %c\n", i, buffer[i]);
+		for (i = 0; i < 5; i++)
+		{
+			level[i*4 + 0] = buffer[11 + i * 31];
+			level[i*4 + 1] = buffer[12 + i * 31];
+			level[i*4 + 2] = buffer[27 + i * 31];
+			level[i*4 + 3] = buffer[28 + i * 31];// 0x01(smoke),0x02(jinshuqi), 0x03(xibanshui);01-05level
+		}
+		//printf("\nThe buffer is %s", level);
+		for (i = 0; i < 5; i++)
+		{
+			returns[i][0] = level[i * 4];
+			returns[i][1] = level[i * 4 + 1];
+			returns[i][2] = level[i * 4 + 2];
+			returns[i][3] = level[i * 4 + 3];
+			returns[i][4] = '\0';
+			printf("\nThe returns[%d] is %s",i,returns[i]);
+		}
+		
+	}else
+		 printf("engGetVariable error !\n" );
+	
+	mxDestroyArray(testdata);					
+	mxDestroyArray(result);										
+	engClose(ep);		
+	while (1);
+	return EXIT_SUCCESS;
 }
 
 
-//	mexPutArray(testdata,"input_data");
-//	testdata = mxCreateDoubleMatrix(1, N, mxREAL);
-//	memcpy((double*)mxGetPr(testdata),(double*)cArray, N * sizeof(double));
-//	memcpy((char*)mxGetPr(testdata), (char*)cArray, N * sizeof(char));
