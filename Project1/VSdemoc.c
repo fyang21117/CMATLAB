@@ -6,6 +6,7 @@
 #include "matrix.h"
 
 #define  BUFSIZE 160
+#define  NUM 1
 #pragma comment(lib, "libeng.lib")
 #pragma comment(lib, "libmx.lib")
 #pragma comment(lib, "libmat.lib")
@@ -13,106 +14,134 @@
 int main()
 {
 	Engine *ep = engOpen(NULL);
-	char level[21],returns[5][5],buffer[BUFSIZE + 1],data[241], data1[241], data2[241], data3[241], data4[241];
-	int i = 0, j = 0,flag = 0;
-	mxArray *testdata = NULL, *testdata1 = NULL, *testdata2 = NULL, *testdata3 = NULL, *testdata4 = NULL, *result = NULL;
-	level[20] = '\0';
-
-	if (!ep)
-	{
+	char level[41] = {'0'}, returns[10][4], buffer[BUFSIZE + 1];
+	int i = 0, j = 0, k = 0, flag = 0;
+	char data[10][241];
+	char inputdata[10][3] = { "t0" ,"t1","t2","t3","t4","t5","t6","t7","t8","t9"};
+	char savedata[10][100] = {
+		"save ('data.mat','t0');",
+		"save ('data.mat','t0','t1');",
+		"save ('data.mat','t0','t1','t2');",
+		"save ('data.mat','t0','t1','t2','t3');",
+		"save ('data.mat','t0','t1','t2','t3','t4');",
+		"save ('data.mat','t0','t1','t2','t3','t4','t5');",
+		"save ('data.mat','t0','t1','t2','t3','t4','t5','t6');",
+		"save ('data.mat','t0','t1','t2','t3','t4','t5','t6','t7');",
+		"save ('data.mat','t0','t1','t2','t3','t4','t5','t6','t7','t8');" ,
+		"save ('data.mat','t0','t1','t2','t3','t4','t5','t6','t7','t8','t9');" };
+	mxArray *testdata[10] = { NULL };
+	mxArray *result = NULL;
+	level[40] = '\0';
+	buffer[BUFSIZE] = '\0';
+	if (!ep){
 		printf("Can't start MATLAB engine!\n\n");
 		return EXIT_FAILURE;
 	}
 	engSetVisible(ep, false);
 
-	//0
-	char input[]  = { "AAAA007C060102000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000D9" };
-	//1烟:4
-	char input1[] = { "AAAA007C0601030F87670607866B0A07866B0A0885730F0885730F0B84740F0B84740F08826F0E08826F0E0F816F100F816F10077E6F0E077E6F0E087B6D0C087B6D0C07796F0B07796F0B177C740C177C740C127F7B15127F7B15077D7911077D79110679740E0679740E0677700D0677700D0075700B0075700B0E73720CD9" };
-	//2香水
-	char input2[] = { "AAAA007C06010300D08E9600D08E9600D08E9600D08E9500D08E9500D18E9500D18E9500D18E9400D18E9400D18E9400D18E9400D08E9300D08E9300D08D9200D08D9200D08D9200D08D9200D08D9100D08D9100D08D9200D08D9200D08D9100D08D9100D08D9100D08D9100D08D9100D08D9100D08C9200D08C9200D08C92D9" };
-	//3榴莲:2
-	char input3[] = { "AAAA007C060103016516030265160202651602036516020365160201661603016616030266160202661602036716020367160201671603016716030268170202681702026817030268170301681703016817030368170203681702026817030268170301681702016817020368160203681602026816030268160302681602D9" };
-	//4喷漆
-	char input4[] = { "AAAA007C060103028F8900028F8900028E8902028E8902018D8902018D89020292890002928900009A8903009A8903019F8900019F890002A2891102A2891101A3890301A3890302A38A0002A38A0000A28A0300A28A0301A18A0201A18A02029F8B11029F8B11019D8B03019D8B03029B8B00029B8B0000998C0200998C02D9" };
+/*	//1烟:1029
+	char input0[] = { "AAAA007C0601030C4239070C443D080B4440070A43420708444306074443050845430508444304064443050744430507444204094642040B4A43050D4E44080F5246091255480A12584A0C12584C0D10584D0C0F574E0B0C554E0A09534E0809504D07094F4C0509514B050A534B060B544B070A534B0609524A0608524906D9" };
+	//2香水1029
+	char input1[] = { "AAAA007C060103064B9701084E9801095199010A539A000A549A010B559A010C579B010D579A000D5799010D5698010D5597010E5596010E5495010E5394010E5293010E5192010F5091010E4F8F010E4D8E010E4C8C010E4A8A010E4988010E4787010D4685010D4483010D4382010D4280010D417F010D3F7D010D3E7B01D9" };
+	//3橘子1029
+	char input2[] = { "AAAA007C060103020C3301E2000E01020C3602020C3701020C3801020C3801010C3901020D3901020D3A01020C3A01020C3A01020C3A01020C3A01020C3A01020C3A01020C3901020C3901020C3901020B3801020B3801020B3801020B3801020B3701020B3701020A3601020A3601020A3601020A3501020A3501020A3601D9" };
+	//4纸巾1029
+	char input3[] = { "AAAA007C06010303000001040000010400000103000001030000010400000104000001030000010300000104000001E2000E0103000001030000010400000104000001030000010300000104000001040000010300000103000001030000010400000103000001030000010400000104000001030000010300000104000001D9" };
+	//4喷漆1029
+	char input4[] = { "AAAA007C060103022936010229360102293601032936010229360102293601022836010328350103283500022734010227340102263301032633010325320003243101022431010223300103222F0103222E0103222E0102212D0102212D0102222C0103222C0002222C0102222C0102222C0102222C0103222C0102212B01D9" };
+*/
+	char input[10][258] = {"AAAA007C0601030C4239070C443D080B4440070A43420708444306074443050845430508444304064443050744430507444204094642040B4A43050D4E44080F5246091255480A12584A0C12584C0D10584D0C0F574E0B0C554E0A09534E0809504D07094F4C0509514B050A534B060B544B070A534B0609524A0608524906D9",
+		"AAAA007C060103064B9701084E9801095199010A539A000A549A010B559A010C579B010D579A000D5799010D5698010D5597010E5596010E5495010E5394010E5293010E5192010F5091010E4F8F010E4D8E010E4C8C010E4A8A010E4988010E4787010D4685010D4483010D4382010D4280010D417F010D3F7D010D3E7B01D9",
+		"AAAA007C060103020C3301E2000E01020C3602020C3701020C3801020C3801010C3901020D3901020D3A01020C3A01020C3A01020C3A01020C3A01020C3A01020C3A01020C3901020C3901020C3901020B3801020B3801020B3801020B3801020B3701020B3701020A3601020A3601020A3601020A3501020A3501020A3601D9",
+		"AAAA007C06010303000001040000010400000103000001030000010400000104000001030000010300000104000001E2000E0103000001030000010400000104000001030000010300000104000001040000010300000103000001030000010400000103000001030000010400000104000001030000010300000104000001D9" ,
+		"AAAA007C060103022936010229360102293601032936010229360102293601022836010328350103283500022734010227340102263301032633010325320003243101022431010223300103222F0103222E0103222E0102212D0102212D0102222C0103222C0002222C0102222C0102222C0102222C0103222C0102212B01D9",
+		"0000","0000","0000","0000","0000"
+	};
 
-	for (i = 14; i < 254; i++, j++) {	//前面14位固定字符，后面连着气味数据120个(240位)是截取部分
-		data[j]  = input[i];
-		data1[j] = input1[i];
-		data2[j] = input2[i];
-		data3[j] = input3[i];
-		data4[j] = input4[i];
+	for (i = 0; i < NUM; i++) {
+		for (j = 14, k = 0; j < 254; j++, k++) {	//前面14位固定字符，后面连着气味数据120个(240位)是截取部分
+			data[i][k] = input[i][j];
+		}
+		data[i][240] = '\0';
+
+		testdata[i] = mxCreateString(data[i]);
+		
+		if (flag != engPutVariable(ep, inputdata[i], testdata[i])){//将变量发到MATLAB工作区间
+			printf("f2ff\n");
+		}
+		if (flag != engEvalString(ep, savedata[i])){		//检查存数据情况
+			printf("f3ff\n");
+		}
 	}
-	data[240]='\0';
-	data1[240] = '\0';	
-	data2[240] = '\0';
-	data3[240] = '\0';
-	data4[240] = '\0';
-	testdata = mxCreateString(data);
-	testdata1 = mxCreateString(data1);
-	testdata2 = mxCreateString(data2);
-	testdata3 = mxCreateString(data3);
-	testdata4 = mxCreateString(data4);
+	/*	testdata1 = mxCreateString(data1);
+		testdata2 = mxCreateString(data2);
+		testdata3 = mxCreateString(data3);
+		testdata4 = mxCreateString(data4);*/
+	/*if (flag != engPutVariable(ep, "input_data", testdata))
+			printf("f2f0\n");
+		if (flag != engPutVariable(ep, "input_data1", testdata1))
+			printf("f2f1\n");
+		if (flag != engPutVariable(ep, "input_data2", testdata2))
+			printf("f2f2\n");
+		if (flag != engPutVariable(ep, "input_data3", testdata3))
+			printf("f2f3\n");
+		if (flag != engPutVariable(ep, "input_data4", testdata4))
+			printf("f2f4\n");
 
-	if(flag != engPutVariable(ep, "input_data", testdata))			
-		printf("f2f0\n");			
-	if (flag != engPutVariable(ep, "input_data1", testdata1))			
-		printf("f2f1\n");
-	if (flag != engPutVariable(ep, "input_data2", testdata2))			
-		printf("f2f2\n");
-	if (flag != engPutVariable(ep, "input_data3", testdata3))			
-		printf("f2f3\n");
-	if (flag != engPutVariable(ep, "input_data4", testdata4))			
-		printf("f2f4\n");
+		if (flag != (engPutVariable(ep, "input_data", testdata)
+			|| engPutVariable(ep, "input_data1", testdata1)
+			|| engPutVariable(ep, "input_data2", testdata2)
+			|| engPutVariable(ep, "input_data3", testdata3)
+			|| engPutVariable(ep, "input_data4", testdata4)
 
-	if (flag != engEvalString(ep, "save 'data.mat';"))//检查存数据情况
+			|| engPutVariable(ep, "input_data5", testdata)
+			|| engPutVariable(ep, "input_data6", testdata1)
+			|| engPutVariable(ep, "input_data7", testdata2)
+			|| engPutVariable(ep, "input_data8", testdata3)))
+			printf("f2ff\n");
+			*/
+	/*	if(flag != engEvalString(ep, "save ('data.mat','input_data');"))	//检查存数据情况
 	{
-		printf("f3ff\n");
-	}
-
-/*	if(flag != engEvalString(ep, "save ('data.mat','input_data');"))	//检查存数据情况
-	{
-		printf("f3ff\n");
+	printf("f3ff\n");
 	}*/
-	
-	buffer[BUFSIZE] = '\0';
-	engOutputBuffer(ep, buffer, BUFSIZE);						
-	if(flag != engEvalString(ep, "laomatest"))		//检查算法文件执行，错误输出f4ff 
-	{
+	engOutputBuffer(ep, buffer, BUFSIZE);
+	if (flag != engEvalString(ep, "rdiot1029")){		//检查算法文件执行
 		printf("f4ff\n");
 	}
 	engOutputBuffer(ep, NULL, 0);
 
-	//printf("The  result of MATLAB is %s\n",buffer);
-	if ((result = engGetVariable(ep, "level")) !=NULL)
+	printf("The  result of MATLAB is %s\n", buffer);
+	if ((result = engGetVariable(ep, "kind")) != NULL)
 	{
 		//for (i = 0; i < sizeof(buffer); i++)printf("The  result of MATLAB【%d】 is %c\n", i, buffer[i]);
-		for (i = 0; i < 5; i++)
-		{
-			level[i*4 + 0] = buffer[11 + i * 31];
-			level[i*4 + 1] = buffer[12 + i * 31];
-			level[i*4 + 2] = buffer[27 + i * 31];
-			level[i*4 + 3] = buffer[28 + i * 31];// 0x01(smoke),0x02(jinshuqi), 0x03(xibanshui);01-05level
+		// 0x01(smoke),0x02(xiangshui), 0x03(juzi), 0x04(penqi|zhijin);01-05level
+
+		for (i = 0; i < NUM; i++){
+			level[i * 2 + 0] = buffer[14 + i * 6];
+			for (j = 20;j < sizeof(buffer);j++) {
+				if (buffer[j] == '=' && buffer[j - 4] == 'v') {
+					j = j + 2;
+					level[i * 2 + 1] = buffer[j+ (i+1) * 6];
+				}
+			}
 		}
-		//printf("\nThe buffer is %s", level);
-		for (i = 0; i < 5; i++)
-		{
-			returns[i][0] = level[i * 4];
-			returns[i][1] = level[i * 4 + 1];
-			returns[i][2] = level[i * 4 + 2];
-			returns[i][3] = level[i * 4 + 3];
+
+		for (i = 0; i < NUM; i++){
+			returns[i][0] = '0';
+			returns[i][1] = level[i * 2];
+			returns[i][2] = '0';
+			returns[i][3] = level[i * 2 + 1];
 			returns[i][4] = '\0';
-			printf("\nThe returns[%d] is %s",i,returns[i]);
+			printf("\nThe returns[%d] is %s", i, returns[i]);
 		}
-		
-	}else
-		 printf("engGetVariable error !\n" );
-	
-	mxDestroyArray(testdata);					
-	mxDestroyArray(result);										
-	engClose(ep);		
+	}
+	else
+		printf("engGetVariable error !\n");
+	for (i = 0; i < NUM; i++) {
+		mxDestroyArray(testdata[i]);
+	}
+	mxDestroyArray(result);
+	engClose(ep);
 	while (1);
 	return EXIT_SUCCESS;
 }
-
-
